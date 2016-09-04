@@ -36,7 +36,6 @@ export class Parser {
 
 
         _.forEach(schemas, (value,key) => {
-        	console.log("Key: "+key,"Value: "+value);
         	if(value != null){
         		result[key] = this.convert(value);	
         	}
@@ -45,19 +44,14 @@ export class Parser {
         return result;
     }
 
-    getType(search) {
-        _.each(this, types, (type) => {
-            if (type.identifiers.indexOf(search) != -1) {
-                return type;
-            }
-        })
-        return null;
-    }
-
-
 
 
     splitSchemas(source) {
+        let res = {};
+
+        if(source.trim().length == 0){
+            return res;
+        }
 
         let schemaNames = source.match(/#\w+(?={(.|\n)+})/g)
         if(schemaNames == null){
@@ -71,14 +65,6 @@ export class Parser {
 
         let schemas = source.split(/#\w+/g);
 
-        if(schemas == null){
-        	throw new Error(JSON.stringify({
-        		errorCode: "parseError",
-        		operation: "splitSchemas",
-        		at: source
-        	}));
-        }
-
 
         schemas.shift();
 
@@ -87,7 +73,7 @@ export class Parser {
         });
 
 
-        let res = {};
+       
 
         schemaNames.map((item,index) => {
         	res[item] = schemas[index];
@@ -264,9 +250,6 @@ export class Parser {
         }
     }
 
-    isNumeric(n){
-    	return !isNaN(parseFloat(n)) && isFinite(n);
-    }
 
     convertParams(input) {
 
@@ -284,10 +267,22 @@ export class Parser {
 
 
       	pairs.map((item) => {
-      		result[item[0]] = this.isNumeric(item[1]) ? parseFloat(item[1]) : item[1];
+
+            let key=  item[0];
+            let value = item[1];
+            /*
+            if(value.charAt(0) == "'" || value.charAt(0) == "\""){
+                value = value.slice(1);
+            }
+
+
+            if(value.charAt(value.length-1) == "'" || value.charAt(value.length-1) == "\""){
+                value = value.slice(0,value.length-2);
+            } */       
+
+      		result[item[0]] = JSON.parse(value) //this.isNumeric(value) ? parseFloat(value) : value;
       	});
 
-        console.log(result);
 
         return result;
 

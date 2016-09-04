@@ -1,6 +1,6 @@
 # Sure-JS
 
-Sure-JS is a Schema language that allows you to create Schemas which you can use in JavaScript, TypeScript and Java. It's Syntax allows for type checking, validation and automatic population. 
+Sure-JS is a Schema language that allows you to create Schemas which you can use in JavaScript, TypeScript and Java. Its Syntax allows for type checking, validation and automatic population. 
 
 
 
@@ -33,3 +33,15 @@ object(){
 }
 
 ```	
+
+## Default types
+
+
+| Identifiers   | Childmode   | Type-Id   |
+|---------------|-------------|-----------|
+| obj,object    | named       | object    |
+| str,string    | none        | string    |
+| nr,number     | none        | number    |
+| bool,boolean  | none        | boolean   |
+| arr,array     | single      | array     |
+```
