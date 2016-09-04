@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="122.12757mm"
+   height="141.02077mm"
+   viewBox="0 0 432.73549 499.67988"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="logo.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.70710678"
+     inkscape:cx="339.83675"
+     inkscape:cy="445.59531"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-309.81335,-439.06934)">
+    <path
+       sodipodi:type="star"
+       style="fill:#1a1a1a;fill-opacity:1;stroke:none;stroke-width:50;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path4146"
+       sodipodi:sides="6"
+       sodipodi:cx="478.00418"
+       sodipodi:cy="688.9093"
+       sodipodi:r1="249.83995"
+       sodipodi:r2="124.91997"
+       sodipodi:arg1="1.0471976"
+       sodipodi:arg2="1.5707963"
+       inkscape:flatsided="true"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 602.92415,905.27705 -249.83995,-10e-6 -124.91997,-216.36775 124.91999,-216.36774 249.83995,1e-5 124.91996,216.36775 z"
+       transform="matrix(0.8660254,0.5,-0.5,0.8660254,456.67199,-146.70575)" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-size:40px;line-height:125%;font-family:Montserrat;-inkscape-font-specification:'Montserrat Heavy';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="514.77374"
+       y="671.93878"
+       id="text4176"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4178"
+         x="514.77374"
+         y="671.93878"
+         style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-family:Montserrat;-inkscape-font-specification:'Montserrat Heavy'" /><tspan
+         sodipodi:role="line"
+         x="514.77374"
+         y="721.93878"
+         style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-family:Montserrat;-inkscape-font-specification:'Montserrat Heavy'"
+         id="tspan4180" /></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:360px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="417.82111"
+       y="806.49493"
+       id="text4182"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4184"
+         x="417.82111"
+         y="806.49493"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Montserrat;-inkscape-font-specification:Montserrat;fill:#ffffff">S</tspan></text>
+  </g>
+</svg>

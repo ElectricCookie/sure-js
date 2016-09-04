@@ -1,9 +1,7 @@
-# Sure-JS
+# <img src="assets/logo.svg" width="30"/> Sure-JS [![Build Status](https://travis-ci.org/ElectricCookie/sure-js.svg?branch=master)](https://travis-ci.org/ElectricCookie/sure-js) 
 
 Sure-JS is a Schema language that allows you to create Schemas which you can use in JavaScript, TypeScript and Java. Its Syntax allows for type checking, validation and automatic population. 
 
-
-[![Build Status](https://travis-ci.org/ElectricCookie/sure-js.svg?branch=master)](https://travis-ci.org/ElectricCookie/sure-js)
 
 
 ## Example
