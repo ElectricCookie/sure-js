@@ -1,0 +1,16 @@
+{
+  "extends": "./setup/.globals.json",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "rules": {
+    "strict": 0,
+    "no-unused-expressions": 0
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "mocha": true
+  }
+}
