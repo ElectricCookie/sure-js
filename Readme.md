@@ -17,7 +17,7 @@ People{
 
 		title: str(minLength=3,maxLength=4)
 
-		description: str(minLength=4,maxLength=10)
+		description: @General.Description
 
 		
 		hobbies: arr(){
