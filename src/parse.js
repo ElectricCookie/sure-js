@@ -1,394 +1,363 @@
 import * as _ from "lodash";
 
+import chalk from "chalk";
 
-export class Parser {
-
-
-
-    constructor() {
-        this.types = [{
-            identifiers: ["obj", "object"],
-            children: "named",
-            type: "object"
-        }, {
-            identifiers: ["str", "string"],
-            children: "none",
-            type: "string"
-        }, {
-            identifiers: ["nr", "number"],
-            children: "none",
-            type: "number"
-        }, {
-            identifiers: ["bool", "boolean"],
-            children: "none",
-            type: "boolean"
-        }, {
-            identifiers: ["arr", "array"],
-            children: "single",
-            type: "array"
-        }];
-    }
+const defaultIgnores = ["comment","newLine","space","indent"];
 
 
-    parse(input) {
-        let schemas = this.splitSchemas(input);
-        let result = {};
+/*
 
+    findNamespaceBegin 
+        word -->
+            findNamespaceOpen 
+                curlyOpen -->
+                    findSchemaBeginOrNamespaceClose
+                        hashtag
+                            findSchemaName
+                                word -->
+                                    findSchemaOpen
+                                        curlyOpen -->
+                                            findItemNameOrSchemaClose
+                                                word -->
+                                                    findItemSeperator
+                                                        colon -->
+                                                            findTypeName
+                                                                word -->
+                                                                    findParameterStartOrTypeEnd
+                                                                        braceOpen -->
+                                                                            findParameterNameOrParameterEnd
+                                                                                word -->
+                                                                                    findParameterSeperator
+                                                                                        equals -->
+                                                                                            findParameterValue
+                                                                            <------------------ word,number,boolean 
 
-        _.forEach(schemas, (value,key) => {
-        	if(value != null){
-        		result[key] = this.convert(value);	
-        	}
-        	
-        });
-        return result;
-    }
+                                                                                braceClose -->
+                                                                                    findTypeEnd -->
+                                            <------------------------------------------- newline
+                                            <--------------------------- newLine
+                        <---------------------- culyClose
+        <-------------- curlyClose
 
 
 
-    splitSchemas(source) {
-        let res = {};
-
-        if(source.trim().length == 0){
-            return res;
-        }
-
-        let schemaNames = source.match(/#\w+(?={(.|\n)+})/g)
-        if(schemaNames == null){
-        	throw new Error(JSON.stringify({
-        		errorCode: "parseError",
-        		operation: "splitSchemas",
-        		at: source
-        	}));
-        }
-        schemaNames = schemaNames.map((item) => item.slice(1));
-
-        let schemas = source.split(/#\w+/g);
+        */
 
 
-        schemas.shift();
-
-        schemas = schemas.map((item) =>  {
-        	return this.getBody(item)
-        });
 
 
-       
-
-        schemaNames.map((item,index) => {
-        	res[item] = schemas[index];
-        })
-
-        return res;
-
-    }
-
-    convert(input) {
-
-    	if(input.trim().charAt(0) == "@"){
-    		return {
-    			type: "schema",
-    			name: input.trim().substr(1).replace(/\s/g,"")
-    		}
-    	}
-
-        let type = this.convertType(input);
-        let found = false;
-        for (var i = this.types.length - 1; i >= 0; i--) {
-            if (this.types[i].identifiers.indexOf(type) != -1) {
-                type = this.types[i];
-                found = true;
-                break;
-            }
-        }
 
 
-        if (!found) {
-            throw new Error(JSON.stringify({
-                errorCode: "parseError",
-                operation: "findType",
-                at: input
-            }));
-        } else {
 
-            let result = {
-            	type: type.type,
-            	params: this.convertParams(input)
+
+
+
+
+
+        export function parse(tokens){
+
+
+            let result = {};
+
+            let currentNamespace = null;    
+            let currentSchema = null;
+            let currentItemName = null;
+            let currentParameterName = null;
+
+
+
+
+
+            const modes = {
+
+                "findNamespaceBegin": {
+                    expect: {
+                        word: (token) => {
+
+                            currentNamespace = token.value;
+
+                            result[token.value] = {
+                                schemas: {
+
+                                }
+                            };
+
+                            return "findNamespaceOpen";
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+
+                "findNamespaceOpen": {
+                    expect: {
+                        curlyOpen: (token) => {
+
+                            return "findSchemaBeginOrNamespaceClose";
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+
+                "findSchemaBeginOrNamespaceClose": {
+                    expect: {
+                        hashtag: (token) => {
+
+                            return "findSchemaName";
+                        },
+                        curlyClose: (token) => {
+
+                            return "findNamespaceBegin";
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+                "findSchemaName": {
+                    expect: {
+                        word: (token) => {
+                            currentSchema = token.value;
+                            result[currentNamespace].schemas[token.value] = {
+                                rules: {
+
+                                },
+                                includes: []
+                            }
+
+                            return "findSchemaOpen";
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+
+                "findSchemaOpen": {
+                    expect: {
+                        curlyOpen: (token) => {
+                            return "findItemNameOrSchemaCloseOrInclude";
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+
+                "findItemNameOrSchemaCloseOrInclude": {
+                    expect: {
+
+                        word: (token) => {
+                            currentItemName = token.value
+                            result[currentNamespace].schemas[currentSchema].rules[token.value] = {
+                                type: null,
+                                parameters: {}
+                            };
+
+                            return "findItemSeperator";
+                        },
+
+                        curlyClose: (token) => {
+                            return "findSchemaBeginOrNamespaceClose";
+                        },
+                        include: (token) => {
+
+                            return "findSchemaLinkBegin";
+                        }
+
+                    },
+                    ignore: defaultIgnores
+                },
+
+                "findSchemaLinkBegin": {
+                    expect: {
+                        atSign: (token) => {
+                            return "findSchemaLinkName";
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+
+                "findSchemaLinkName": {
+                    expect: {
+                        word: (token) => {
+
+                            result[currentNamespace].schemas[currentSchema].includes.push(token.value);
+
+                            return "findIncludeEnd";
+                        }
+                    },
+                    ignore: ["comment","indent","space"]
+                },
+
+
+                "findIncludeEnd": {
+
+                    expect: {
+                        newLine: (token) => {
+                            return "findItemNameOrSchemaCloseOrInclude";
+                        }
+                    },
+                    
+                    ignore: ["space","indent","space"]
+                },
+
+                "findItemSeperator": {
+                    expect: {
+                        colon: (token)  => {
+                            return "findTypeName";
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+                "findTypeName": {
+                    expect: {
+                        word: (token) => {
+
+                            result[currentNamespace].schemas[currentSchema].rules[currentItemName].type = token.value;
+
+                            return "findParameterStartOrTypeEnd";
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+                "findParameterStartOrTypeEnd": {
+                    expect: {
+                        braceOpen: (token) => {
+                            return "findParameterNameOrParameterEnd";  
+                        },
+                        newLine: (token) => {
+                            return "findItemNameOrSchemaCloseOrInclude";
+                        }
+                    },
+                    ignore: ["comment","indent","space"]
+                },
+                "findParameterNameOrParameterEnd": {
+                    expect: {
+                        word: (token) => {
+
+                            currentParameterName = token.value;
+
+                            return "findParameterSeperator";
+                        },
+                        braceClose: (token) => {
+                            return "findTypeEnd"; 
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+
+                "findNextParameterOrParameterEnd": {
+                    expect: {
+                        braceClose: (token) => {
+                            return "findTypeEnd";
+                        },
+                        comma: (token) => {
+                            return "findParameterNameOrParameterEnd";
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+
+                "findParameterSeperator": {
+                    expect: {
+                        equals: (token) => {
+                            return "findParameterValue"  
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+                "findParameterValue": {
+                    expect: {
+                        string: (token) => {
+
+                            result[currentNamespace].schemas[currentSchema].rules[currentItemName].parameters[currentParameterName] = token.value;
+
+                            return "findNextParameterOrParameterEnd";
+                        },
+                        number: (token) => {
+
+                            result[currentNamespace].schemas[currentSchema].rules[currentItemName].parameters[currentParameterName] = token.value;
+
+                            return "findNextParameterOrParameterEnd";
+                        },
+                        boolean: (token) => {
+
+                            result[currentNamespace].schemas[currentSchema].rules[currentItemName].parameters[currentParameterName] = token.value;
+
+                            return "findNextParameterOrParameterEnd";
+                        }
+                    },
+                    ignore: defaultIgnores
+                },
+                "findTypeEnd": {
+                    expect: {
+                        semiColon: (token) => {
+                            return "findItemNameOrSchemaCloseOrInclude";
+                        },
+                        newLine: (token) => {
+                            return "findItemNameOrSchemaCloseOrInclude";
+                        }
+                    },
+                    ignore: ["comment","indent","space"]
+                }
+
             };
 
 
-            switch (type.children) {
-                case "single":
 
-                	result.child = this.convert(this.getBody(input,"{","}"));
+            let currentMode = "findNamespaceBegin";
 
 
-                    break;
+            for(let i = 0; i < tokens.length; i++){
 
-                case "named":
+                let token = tokens[i];
 
-                    let body = this.getBody(input, "{", "}");
+                if(modes[currentMode] != null){
+                    let mode = modes[currentMode];
 
-                    result.children =  this.splitByName(body);
+                    // Check if current token is expected
 
+                    if(mode.expect[token.type] != null){
+                        currentMode = mode.expect[token.type](token);
 
-                    break;
-            }
-            return result;
+                    }else{
+                        // Check if current token may be ignored
+                        if(mode.ignore.indexOf(token.type) == -1){
 
-        }
-
-
-    }
-
-
-    splitByName(source) {
-
-
-        let children = {};
-        let inString = false;
-        let stringChar;
-        let currentId = "";
-        let count = 0;
-        let currentBody = "";
-
-        let mode = "id";
-
-        for (let i = 0; i < source.length; i++) {
-
-            let char = source[i];
-
-
-            if (char == ":") {
-                mode = "body";
-                continue;
-            }
-
-            if (mode == "id") {
-                currentId += char;;
-            } else {
-
-                currentBody += char;
-
-                if (inString) {
-                    if (char == stringChar) {
-                        inString = false;
-                    }
-                } else {
-
-                	if(count == 0 && char == "\n"){
-                		mode = "id";
-                        children[currentId.replace(/(\n|\t|\s)+/g,"")] = currentBody;
-                        currentId = "";
-                        currentBody = "";
-
-                	}else{
-
-
-                		if (char == "\"" || char == "'") {
-	                        inString = true;
-	                        stringChar = char;
-	                    } else {
-
-	                        if (char == "{") {
-	                            count++;
-	                        } else if (char == "}") {
-	                            count--;
-	                            if (count == 0) {
-	                                mode = "id";
-	                                children[currentId.replace(/(\n|\t|\s)+/g,"")] = currentBody;
-	                                currentId = "";
-	                                currentBody = "";
-
-	                            }
-	                        }
-
-	                    }
-
-                	}
-
-                    
-
-                }
-
-
-            }
-
-
-
-
-        }
-
-
-        let final = {};
-
-
-        Object.keys(children).map((key) => {
-
-        	final[key] = this.convert(children[key]);
-        });
-
-
-        return final;
-
-
-    }
-
-
-
-    convertType(input) {
-        let match = input.match(/\w+(?=\()/);
-
-        if (match == null || match.length != 1) {
-            throw new Error(JSON.stringify({
-                errorCode: "parseError",
-                operation: "convertType",
-                at: input
-            }));
-        } else {
-            return match[0];
-        }
-    }
-
-
-    convertParams(input) {
-
-        let params = this.getBody(input, "(", ")");
-
-
-        let pairs = this.splitBy(",", params);
-
-        pairs = pairs.map((pair) => {
-
-            return this.splitBy("=", pair);
-        });
-
-        let result = {};
-
-
-      	pairs.map((item) => {
-
-            let key=  item[0];
-            let value = item[1];
-            /*
-            if(value.charAt(0) == "'" || value.charAt(0) == "\""){
-                value = value.slice(1);
-            }
-
-
-            if(value.charAt(value.length-1) == "'" || value.charAt(value.length-1) == "\""){
-                value = value.slice(0,value.length-2);
-            } */       
-
-      		result[item[0]] = JSON.parse(value) //this.isNumeric(value) ? parseFloat(value) : value;
-      	});
-
-
-        return result;
-
-
-    }
-
-
-    splitBy(split, source) {
-
-        let result = [];
-        let currentItem = "";
-        let lastChar;
-        let inString = false;
-        let stringChar;
-        for (let i = 0; i < source.length; i++) {
-
-            let char = source[i];
-
-            if (lastChar != "\\") {
-                if (char == "\"" || char == "'") {
-                    if (inString && stringChar == char) {
-                        inString = false;
-                    } else {
-                        if (!inString) {
-                            inString = true;
-                            stringChar = char;
+                            throw new Error(
+                                chalk.red(
+                                    "Syntax Error: Expected "+
+                                    formatList(Object.keys(mode.expect))+
+                                    " but got "+token.type+" instead at line "+token.line+":"+token.linePos
+                                )   
+                            )
                         }
+
                     }
+
+                }else{
+                    throw new Error(chalk.red("Invalid Mode: "+currentMode)+" this is an internal Error!");
                 }
+
             }
 
-            if (char == split && !inString) {
-                result.push(currentItem);
-                currentItem = "";
-
-            } else {
-                currentItem += char;
-            }
-
-            lastChar = char;
-
-        }
-        if(currentItem.length != 0){
-        	result.push(currentItem);	
-        }
-        
-
-        if (inString) {
-            throw new Error(JSON.stringify({
-                errorCode: "parseError",
-                operation: "split",
-                details: "unfinishedString",
-                at: source
-            }))
+            return result;
         }
 
 
-        return result;
 
 
+function formatList(list){
+
+    let result = "";
+    if(list.length > 2){
+        result += list.slice(0,list.length-2).join(", ")
+        result += " or "+list[list.length-1];    
+    }
+
+    if(list.length == 2){
+        result = list[0]+" or "+list[1]
+    }
+
+    if(list.length == 1){
+        result = list[0];
     }
 
 
-    getBody(source, start = "{", end = "}") {
-
-        let count = 0;
-        let result = "";
-        let inString = false;
-        let stringChar = null;
-        let lastChar;
-        for (let i = 0; i < source.length; i++) {
-
-            if ((source[i] == "\"" || source[i] == "'") && lastChar != "\\") {
-                if (inString && stringChar == source[i]) {
-                    inString = false
-                } else {
-                    if (!inString) {
-                        inString = true;
-                        stringChar = source[i];
-                    }
-                }
-            }
-
-            if (source[i] == start && !inString && lastChar != "\\") {
-                count++;
-            }
-            if (source[i] == end && !inString && lastChar != "\\") {
-                count--;
-                if (count == 0) {
-                    return result.substr(1);
-                }
-            }
-
-            if (count != 0) {
-                result += source[i];
-            }
-            lastChar = source[i];
-        }
-
-        throw new Error(JSON.stringify({
-            errorCode: "parseError",
-            operation: "retrieveBody",
-            details: "unfinishedBlock",
-            at: source
-        }));
-
-    }
+    return result;
 
 }
