@@ -17,11 +17,8 @@ People{
 
 		title: str(minLength=3,maxLength=4)
 
-<<<<<<< HEAD
-		description: str(minLength=4,maxLength=10)
-=======
+
 		description: @General.Description
->>>>>>> origin/master
 
 		
 		hobbies: arr(){
@@ -49,34 +46,15 @@ People{
 		}
 	}
 
-<<<<<<< HEAD
 
 
 }
-
 
 General{
 	
 	#Description: str(minLength=4,maxLength=10)
 
 }
-
-
-=======
-
-
-}
-
-
-General{
-	
-	#Description: str(minLength=4,maxLength=10)
-
-}
-
-
->>>>>>> origin/master
-
 
 
 
@@ -109,26 +87,14 @@ Default types are:
 
 
 ### Schemas 
-<<<<<<< HEAD
 Schemas are defined using the `#` symbol.
-=======
-Schemas are defined using the `#` symbol. A schema may consist of multiple types or a single type.
->>>>>>> origin/master
-Example:
+*Example:*
 ```
 Namespace{
-	// Multiple types
 	#Schema1{
 		name: str()
 		age: nr()
 	}
-
-<<<<<<< HEAD
-	
-=======
-	// Single type
-	#Schema2 = str()
->>>>>>> origin/master
 }
 ```
 
@@ -139,11 +105,7 @@ Example:
 ```
 Namespace{
 	#Book{
-<<<<<<< HEAD
-		author: @Schema2
-=======
 		author: @Author
->>>>>>> origin/master
 	}
 
 	#Author{
@@ -176,7 +138,6 @@ Namespace{
 
 ```  
 
-<<<<<<< HEAD
 
 ## Language compatibility
 
@@ -194,7 +155,6 @@ Validations{
 ```
 It is the task of the language implementation to make sure these declarations are matched. The Sure-JS JS library supports these checks by default.
 
-=======
->>>>>>> origin/master
+
 
 
