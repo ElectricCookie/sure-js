@@ -69,7 +69,9 @@ User{
 ## Further reading
 
 [Getting started](https://github.com/ElectricCookie/sure-js/wiki/Getting-started)
+
 [Syntax Explaination](https://github.com/ElectricCookie/sure-js/wiki/Syntax)
+
 [Custom Validators](https://github.com/ElectricCookie/sure-js/wiki/Custom-validators)
 
 
