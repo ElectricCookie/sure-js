@@ -1,8 +1,11 @@
 <p align="center"><img src="https://raw.githubusercontent.com/ElectricCookie/sure-js/master/assets/logo.png" width="30"/></p>
 
-# SureJS
+<h1 align="center">SureJS</h1>
 
-[![Build Status](https://travis-ci.org/ElectricCookie/sure-js.svg?branch=master)](https://travis-ci.org/ElectricCookie/sure-js) 
+
+<p align="center">
+	<img src="https://travis-ci.org/ElectricCookie/sure-js.svg?branch=master" />
+</p>
 
 ## IMPORTANT: Currently in Development - not ready for public use
 
@@ -12,51 +15,49 @@ Sure-JS is a Schema language that allows you to create Schemas which you can use
 
 ## Example
 ```
+User{
+	
+	#Account{
+
+		username: str(minLength=3,maxLength=16,trim=true)
+
+		email: str(minLength=4,maxLength=64,trim=true)
 
 
-People{
+		// Will be hashed
+		password: str(length=64) 
 
-	#Person{
-		id: str(length=36)
+		// Timestamps
+		registered: number(allowDecimals=false)
+		lastSeen: number(allowDecimals=false)
 
-		title: str(minLength=3,maxLength=4)
+		bio: str(maxLength=2048)
 
 
-		description: @General.Description
+	}
 
-		
-		hobbies: arr(){
-			str(length=36)
+	#Login{
+		username: >Account.username
+		password: str(minLength=3,maxLength=1024)
+	}
+
+	#Register{
+		// Include rules from schema by using @ Syntax
+		username: >Account.username
+		password: >Login.password
+		passwordConfirm: >Login.password
+	}
+
+	#PublicProfile{
+		// Partial schema
+		>User.User{
+			// Only the rules listed here are part of the schema
+			username,
+			bio,
+			lastSeen,
+			registed
 		}
 	}
-
-
-
-
-	#Hobby{
-		id: str(length=36)
-
-		title: str(minLength=3,maxLength=4)
-
-		description: @General.Description
-
-
-	}
-	
-	#PersonPopulated{
-		...@Person
-		hobbies: arr(){
-			@Hobby
-		}
-	}
-
-
-
-}
-
-General{
-	
-	#Description: str(minLength=4,maxLength=10)
 
 }
 
@@ -64,100 +65,13 @@ General{
 
 ```	
 
-## Syntax explaination
 
-### Namespaces
-Schemas always belong to a namespace. A namespace is declared as follows: 
-``` 
-Namespace{
-	
-}
-``` 
+## Further reading
 
-### Types
-A type describes a data-type with it's validation attributes. 
-```
-	type(attribute1="foo",attribute2=10)
-```
+[Getting started](https://github.com/ElectricCookie/sure-js/wiki/Getting-started)
+[Syntax Explaination](https://github.com/ElectricCookie/sure-js/wiki/Syntax)
+[Custom Validators](https://github.com/ElectricCookie/sure-js/wiki/Custom-validators)
 
-Default types are: 
-* `str()  string()`
-* `nr() number()` 
-* `bool()  boolean()` 
-* ` arr() array() `
-* `map()`  
-
-
-
-
-### Schemas 
-Schemas are defined using the `#` symbol.
-*Example:*
-```
-Namespace{
-	#Schema1{
-		name: str()
-		age: nr()
-	}
-}
-```
-
-### Schema References
-You can link to a different Schema by using the `@` symbol.
-
-Example:
-```
-Namespace{
-	#Book{
-		author: @Author
-	}
-
-	#Author{
-		name: str()
-		age: nr()
-	}
-}
-``` 
-
-### Composition
-You can include rules from another schema in the current one using the `...@Schema` Syntax. A value that is included from another schema can also be overwritten by simply defining it again.
-
-
-Example:
-```
-Namespace{
-	#Book{
-		id: str(length=36)
-		title: str()
-		released: nr()
-	}
-
-	#Comic{
-		...@Book
-		colored: bool()
-		title: str(maxLength=36)
-	}
-
-}
-
-```  
-
-
-## Language compatibility
-
-Sure-JS is designed to work across many languages. There are integrations planned for TypeScript, Java and Go. To make sure your validation is working across all languages you can annotate which ones are required by using this syntax:
-
-```
-
-Validations{
-	str{
-		"minLength": ["go","js","ts"]
-	}
-	
-}
-
-```
-It is the task of the language implementation to make sure these declarations are matched. The Sure-JS JS library supports these checks by default.
 
 
 
