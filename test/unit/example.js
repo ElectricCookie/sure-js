@@ -14,7 +14,7 @@ Namespace{
 		}
 
 		#Schema3{
-			...@Schema2
+			...Schema2{ age }
 			excalibur: boolean()	
 		}
 	}

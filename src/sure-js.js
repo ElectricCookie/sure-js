@@ -1,10 +1,5 @@
 import chalk from "chalk";
 import { parse } from "./parse";
-const sureJs = {
-  greet() {
-    return 'hello';
-  }
-};
 
 
 function iterateObject(object,process){
@@ -80,4 +75,5 @@ class SureJsStore{
 }
 
 
-export default sureJs;
+
+export default SureJsStore;

@@ -22,7 +22,9 @@ export function lex(source){
 		"/": "forwardSlash",
 		"#": "hashtag",
 		",": "comma",
-		"@": "atSign"
+		"@": "atSign",
+		">": "gT",
+		"<": "lT"
 	}
 
 
@@ -297,24 +299,64 @@ function findComments(tokens){
     return result;
 }
 
+function isWhiteSpace(letter){
+	return letter == " ";
+}
+
 function findWhitespace(tokens){
 
+	let result = [];
 
-	return tokens.map((token) => {
-		if(token.type == "word" && token.value.length != 0){
-			let isWhiteSpace = true;
-			for(let i = 0; i < token.value.length; i++){
-				if(token.value.charAt(i) != " "){
-					isWhiteSpace = false;
-					break;
+	for(let i = 0; i  < tokens.length; i++){
+
+		let token = tokens[i];
+
+
+
+		if(token.type == "word"){
+			// Iterate over the word
+
+
+			let currentString = "";
+			let begin = token.linePos;
+			let currentlyWhiteSpace = false;
+
+			for(let j = 0; j < token.value.length; j++){
+
+				let letter = token.value[j];
+
+				let isChar = isWhiteSpace(letter);
+
+				if((currentlyWhiteSpace != isWhiteSpace(letter) || j == token.value.length-1 ) && currentString.length != 0){
+
+					result.push({
+						type: currentlyWhiteSpace ? "space" : "word",
+						value: j == token.value.length-1 ? currentString+letter : currentString,
+						line: token.line,
+						linePos: begin
+					})
+
+					begin = token.linePos+j;
+					currentString = letter;
+					currentlyWhiteSpace = isWhiteSpace(letter);
+
+				}else{
+					currentString += letter;
+					currentlyWhiteSpace = isWhiteSpace(letter);
 				}
-			}
 
-			if(isWhiteSpace){
-				token.type = "space";
+
 			}
+			
+
+
+		}else{
+
+			result.push(token)
+
 		}
-		return token;
-	})
+	}
 
+	return result;
 }
+
