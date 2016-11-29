@@ -8,8 +8,7 @@ describe("Parse", () => {
 
 	describe("#lex",() => {
 
-
-		console.log(lex(example).map((token) => { return token.type+": "+token.value}))
+		//lex(example).map((token) => { return token.type+": "+token.value})
 
 
 	});

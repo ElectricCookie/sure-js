@@ -7,6 +7,7 @@ export function lex(source){
 
 	let types = {
 		"\n": "newLine",
+		"\r": "newLine",
 		"\t": "indent",
 		"'": "singleQuote",
 		"\"": "doubleQuote",
@@ -24,7 +25,9 @@ export function lex(source){
 		",": "comma",
 		"@": "atSign",
 		">": "gT",
-		"<": "lT"
+		"<": "lT",
+		"[": "bracketOpen",
+		"]": "bracketClose"
 	}
 
 
@@ -100,6 +103,7 @@ export function lex(source){
 
 
 	// Convert and reduce tokens
+	
 	tokens = findWhitespace(tokens);
 	tokens = findComments(tokens);
     tokens = findNumbers(tokens);
@@ -217,7 +221,7 @@ function findNumbers(tokens){
     for(let i = 0; i < tokens.length; i++){
         let token = tokens[i];
         if(token.type == "word"){
-            if(!isNaN(token.value)){
+            if(!isNaN(parseFloat(token.value))){
                 token.type = "number";
                 token.value = parseFloat(token.value);
             }
@@ -314,12 +318,13 @@ function findWhitespace(tokens){
 
 
 		if(token.type == "word"){
+
 			// Iterate over the word
 
 
 			let currentString = "";
 			let begin = token.linePos;
-			let currentlyWhiteSpace = false;
+			let currentlyWhiteSpace = isWhiteSpace(token.value.charAt(0));
 
 			for(let j = 0; j < token.value.length; j++){
 
@@ -327,7 +332,11 @@ function findWhitespace(tokens){
 
 				let isChar = isWhiteSpace(letter);
 
-				if((currentlyWhiteSpace != isWhiteSpace(letter) || j == token.value.length-1 ) && currentString.length != 0){
+				let a = (currentlyWhiteSpace != isWhiteSpace(letter)) && currentString.length != 0
+
+				let b = j == token.value.length-1
+
+				if(a || b){
 
 					result.push({
 						type: currentlyWhiteSpace ? "space" : "word",
@@ -339,6 +348,7 @@ function findWhitespace(tokens){
 					begin = token.linePos+j;
 					currentString = letter;
 					currentlyWhiteSpace = isWhiteSpace(letter);
+
 
 				}else{
 					currentString += letter;
@@ -356,6 +366,8 @@ function findWhitespace(tokens){
 
 		}
 	}
+
+
 
 	return result;
 }

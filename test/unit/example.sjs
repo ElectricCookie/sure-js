@@ -33,7 +33,7 @@ User{
 
 	#PublicProfile{
 		// Partial schema
-		>User.User{
+		...User.User{
 			username,
 			bio,
 			lastSeen,
@@ -42,35 +42,3 @@ User{
 	}
 
 }
-
-
-
-
-// partialInclude
->Namespace.Schema{
-	word,word,word
-}
-
-// fieldInclude
-username: >Namespace.Schema.value
-value: >Schema.Value
-
-// extension
-
-#Schema{
-	...@Namespace.Schema
-
-	// or
-
-	...@Schema
-
-
-	// reduction.. Includes all fields apart from the ones inside the curly braces.
-	...@Schema{username}
-}
-
-
-
-
-
-

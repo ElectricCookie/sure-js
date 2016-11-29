@@ -1,18 +1,28 @@
-import sureJs from '../../src/sure-js';
+import SureJS from '../../src/sure-js';
 
 describe('sureJs', () => {
-  describe('Greet function', () => {
-    beforeEach(() => {
-      spy(sureJs, 'greet');
-      sureJs.greet();
-    });
+  describe('#addSchemas', () => {
+      
 
-    it('should have been run once', () => {
-      expect(sureJs.greet).to.have.been.calledOnce;
-    });
+    it("should add Schemas to the Store",() => {
 
-    it('should have always returned hello', () => {
-      expect(sureJs.greet).to.have.always.returned('hello');
-    });
+      let store = new SureJS();
+
+      expect(() => {
+        store.addSchemas(__dirname+"/*.sjs",() => {
+          console.log("Namespaces");
+          console.log(store.getNamespaces());
+        });    
+      }).to.not.throw(Error);
+
+    })
+
+    
+    
+    
+
+    
+
+
   });
 });
