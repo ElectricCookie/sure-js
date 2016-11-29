@@ -50,8 +50,8 @@ User{
 
 	#PublicProfile{
 		// Partial schema
-		>User.User{
-			// Only the rules listed here are part of the schema
+		...User.User{
+			// Only the rules listed here are part of the schema. If there are no {}-braces all rules are included
 			username,
 			bio,
 			lastSeen,
@@ -59,7 +59,7 @@ User{
 		}
 	}
 
-}
+}	
 
 
 

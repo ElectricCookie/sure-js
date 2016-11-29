@@ -20,12 +20,12 @@ User{
 	}
 
 	#Login{
-		username: @User.User.username
+		username: >User.User.username
 		password: str(minLength=3,maxLength=1024)
 	}
 
 	#Register{
-		// Include ruels from schema by using @ Syntax
+		
 		username: >User.username
 		password: >Login.password
 		passwordConfirm: >Login.password
@@ -37,7 +37,7 @@ User{
 			username,
 			bio,
 			lastSeen,
-			registed
+			registered
 		}
 	}
 

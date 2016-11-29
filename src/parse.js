@@ -42,6 +42,22 @@ function iterateObject(object,process){
 
 }
 
+function getType(type){
+
+    const aliases = {
+        str: "string",
+        nr: "number",
+        b: "boolean"
+    }
+
+    if(aliases[type] != null){
+        return aliases[type];
+    }
+
+    return type;
+
+}
+
 
 export function parse(tokens){
 
@@ -89,15 +105,15 @@ export function parse(tokens){
         "findIncludeName": {
             expect: {
                 "findIncludeName": ["word","dot"],
-                "findExcludedValues": ["curlyOpen"],
+                "findIncludedValues": ["curlyOpen"],
                 "findSchemaOpen": ["newLine"]
             },
             ignore: ["comment","space","indent"]
         },
-        "findExcludedValues": {
+        "findIncludedValues": {
             expect: {
                 "findSchemaOpen": ["curlyClose"],
-                "findExcludedValues": ["word","comma"]
+                "findIncludedValues": ["word","comma"]
             }
         },
         "findItemName": {
@@ -125,11 +141,19 @@ export function parse(tokens){
         },
         "findItemLink":{
             expect: {
-                "findItemLink": ["word","dot"],
+                "findItemLink": ["word"],
+                "findItemLinkSeperator": ["dot"],
                 "findArrayStart": ["braceOpen"],
                 "findSchemaOpen": ["newLine"]
             }
         },
+
+        "findItemLinkSeperator": {
+            expect: {
+                "findItemLink": ["word"]
+            }
+        },
+
         "findArrayStart": {
             expect: {
                 "findItemType": ["bracketClose"]
@@ -169,7 +193,7 @@ export function parse(tokens){
 
         "findSchemaLinkArrayStart": {
             expect: {
-                "findSchemaOpen": ["braceClose"]
+                "findSchemaOpen": ["bracketClose"]
             }
         }
     };
@@ -181,7 +205,7 @@ export function parse(tokens){
     let currentParameter;
 
     let currentInclude = [];
-    let currentExcludedValues = [];
+    let currentIncludedValues = [];
 
     let currentLink = [];
 
@@ -238,11 +262,11 @@ export function parse(tokens){
                     result.namespaces[currentNamespace].schemas[currentSchema].includes.push({
                         namespace: currentInclude.length == 2 ? currentInclude[0] : currentNamespace,
                         schema: currentInclude.length == 2 ? currentInclude[1] : currentInclude[0],
-                        exclude: currentExcludedValues
+                        include: currentIncludedValues
                     });
 
                     currentInclude = [];
-                    currentExcludedValues = [];
+                    currentIncludedValues = [];
                 }
 
 
@@ -299,6 +323,8 @@ export function parse(tokens){
 
         findItemLink: {
             word: (token) => {
+
+
                 if(currentLink.length == 3){
                     throw new Error(`An item-link has to declare three values at max. Use Syntax: >Schema.item or ...Namespace.Schema.item !`)
                 }
@@ -327,7 +353,7 @@ export function parse(tokens){
         findItemType: {
             word: (token) => {
                 
-                result.namespaces[currentNamespace].schemas[currentSchema].rules[currentItemName].type = token.value;
+                result.namespaces[currentNamespace].schemas[currentSchema].rules[currentItemName].type = getType(token.value);
 
             },
             bracketClose: (token) => {
@@ -368,14 +394,18 @@ export function parse(tokens){
                 if(currentInclude.length == 2){
                     throw new Error(`An include has to declare two values at max. Use Syntax: ...Namespace.Schema or ...Schema !`);
                 }
-                console.log("Include",token.value);
                 currentInclude.push(token.value);
             },
 
         },
-        findExcludedValues: {
+        findIncludedValues: {
             word: (token) => {
-                currentExcludedValues.push(token.value);
+                currentIncludedValues.push(token.value.trim());
+            }
+        },
+        findSchemaLinkArrayStart: {
+            bracketOpen: (token) => {
+                result.namespaces[currentNamespace].schemas[currentSchema].rules[currentItemName].array = true;
             }
         }
 
@@ -409,7 +439,6 @@ export function parse(tokens){
 
                     currentMode = nextModes[i];
 
-                    //console.log(currentMode,token.value);  
 
                     if(listeners[currentMode] != null){
                         if(listeners[currentMode][token.type] != null) {

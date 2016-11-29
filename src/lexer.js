@@ -102,7 +102,23 @@ export function lex(source){
 	}
 
 
+	if(currentWord != null){
+
+		tokens.push({
+			type: "word",
+			value: currentWord,
+			line: wordLine,
+			linePos: wordLinePos,
+			totalPos: wordPos
+		});
+
+		currentWord = null;
+
+	}
+
 	// Convert and reduce tokens
+
+
 	
 	tokens = findWhitespace(tokens);
 	tokens = findComments(tokens);
@@ -141,11 +157,22 @@ function findInclude(tokens){
 			}else if(currentInclude.length == 0){
 				result.push(token)
 			}else{
-				result.concat(currentInclude);
+				result = result.concat(currentInclude);
+				result.push(token);
 				currentInclude = [];
 			}
 		}
 	}
+
+	if(currentInclude.length == 3){
+
+		currentInclude[0].type = "include";
+		currentInclude[0].value = "...";
+		result.push(currentInclude[0]);
+	}else{
+		result = result.concat(currentInclude);
+	}
+
 	return result;
 }
 
@@ -155,7 +182,7 @@ function findStrings(tokens){
 
     let inString = false;
     let quoteType = null;
-    let currentString = null;
+    let currentString = [];
 
     let stringLine;
     let stringLinePos;
@@ -172,30 +199,31 @@ function findStrings(tokens){
             if(token.type == quoteType){
 
                 // End of string
+                currentString.shift()
             
-                result.push({
-                    type: "string",
-                    value: currentString,
-                    line: stringLine,
-                    linePos: stringLinePos,
-                    totalPos: stringTotalPos
-                })
+                currentString[0].value = currentString.map((item) => { return item.value }).join("")
+
+                currentString[0].type = "string";
+
+                result.push(currentString[0])
+
+                inString = false;
+                quoteType = null;
+                currentString = [];
 
 
             }else{
                 // Add to string
-                currentString += token.value
+                currentString.push(token)
             }
 
         }else{
 
             if(token.type == "singleQuote" || token.type == "doubleQuote"){
                 // New String
+                currentString.push(token);
 
-                currentString = "";
-                stringLine = token.line;
-                stringLinePos = token.linePos;
-                stringTotalPos = token.totalPos;
+                inString = true;
                 quoteType = token.type;
 
 
@@ -205,6 +233,10 @@ function findStrings(tokens){
         }
 
 
+    }
+
+    if(inString){
+    	result = result.concat(currentString);
     }
 
 
@@ -298,6 +330,20 @@ function findComments(tokens){
         	}
         }
 
+    }
+
+    if(currentComment.length == 1){
+
+    	result = result.concat(currentComment);
+
+    }else if(currentComment.length != 0){
+    	let value = "";
+		for(let i = 0; i < currentComment.length; i++){
+			value += currentComment[i].value;
+		}
+		currentComment[0].type = "comment";
+		currentComment[0].value = value;
+		result.push(currentComment[0]);
     }
 
     return result;
