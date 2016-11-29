@@ -1,11 +1,8 @@
 import chalk from "chalk";
 import { parse } from "./parse";
-const sureJs = {
-  greet() {
-    return 'hello';
-  }
-};
-
+import { lex } from "./lexer";
+import * as fs from "fs";
+import glob from "glob";
 
 function iterateObject(object,process){
 
@@ -25,11 +22,19 @@ function iterateObject(object,process){
 
 class SureJsStore{
 
-	SureJsStore(){
+	constructor(){
+
 
 		this.namespaces = {};
 
+
 	}
+
+
+	getNamespaces(){
+		return Object.keys(this.namespaces);
+	}
+
 
 
 	validate(schemaName,item,callback){
@@ -37,11 +42,19 @@ class SureJsStore{
 	}
 
 
-	parseSchema(schema){
-		let tree = parse(schema);
 
 
-		iterateObject(tree,(namespaceName,namespace) => {
+	parseSchema(schema,meta){
+
+		console.log(this);
+		
+		let tree = parse(lex(schema));
+
+		console.log(tree);
+
+		iterateObject(tree.namespaces,(namespaceName,namespace) => {
+
+			console.log(namespace)
 
 			iterateObject(namespace.schemas,(schemaName,schema) => {
 
@@ -55,10 +68,6 @@ class SureJsStore{
 				if(this.namespaces[namespaceName] == null){
 					this.namespaces[namespaceName] = {};
 				}
-
-				// Write the schema
-
-				
 				
 			});
 
@@ -66,8 +75,31 @@ class SureJsStore{
 
 	}
 
-	addSchemas(directory,recursive=false){
-		// Todo parse globs
+	addSchemas(expr,callback){
+		
+		glob(expr,{},(err,files) => {
+
+			if(err){ throw err; }
+
+			console.log(files);
+
+			for(let i = 0; i < files.length; i++){
+				let file = files[i];
+
+				let data = fs.readFileSync(file);
+
+				data = data.toString();
+
+				this.parseSchema(data,{
+					path: file
+				});
+
+
+			}
+
+			callback();
+
+		});
 	}
 
 	registerValidator(validator){
@@ -80,4 +112,5 @@ class SureJsStore{
 }
 
 
-export default sureJs;
+
+export default SureJsStore;

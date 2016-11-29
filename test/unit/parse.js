@@ -8,7 +8,7 @@ describe("Parse", () => {
 
 	let tokens = lex(example);
 
-	console.log(JSON.stringify(parse(tokens)));
+	//console.log(JSON.stringify(parse(tokens),null,4));
 
 
 

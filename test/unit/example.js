@@ -1,5 +1,5 @@
 module.exports = `
-Namespace{
+	Namespace{
 		#Schema1{
 			// comment () + FOo bar 	test
 			name: str(length=3,trim=true)
@@ -7,15 +7,20 @@ Namespace{
 
 		#Schema2{
 			// foobar
-			age: str(
+			age: str[](
 				length=3,
 				trim=false
 			) // test
+
+			owner: @Schema1
+
 		}
 
 		#Schema3{
-			...@Schema2
+			...Schema2{ age }
 			excalibur: boolean()	
+			randomNumber: >Schema2.age
+			otherNumber: >randomNumber
 		}
 	}
 `; 
