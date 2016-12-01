@@ -11,7 +11,11 @@
 
 Sure-JS is a Schema language that allows you to create Schemas which you can use in JavaScript, TypeScript and Java. Its Syntax allows for type checking, validation and schema composition. 
 
+## Installation
 
+```bash
+	npm i --save sure-js
+```
 
 ## Example
 ```
