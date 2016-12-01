@@ -86,17 +86,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _lodash8 = _interopRequireDefault(_lodash7);
 	
-	var _lodash9 = __webpack_require__(18);
-	
-	var _lodash10 = _interopRequireDefault(_lodash9);
-	
 	var _utils = __webpack_require__(12);
 	
-	var _string = __webpack_require__(19);
+	var _string = __webpack_require__(18);
 	
 	var _string2 = _interopRequireDefault(_string);
 	
-	var _number = __webpack_require__(20);
+	var _number = __webpack_require__(19);
 	
 	var _number2 = _interopRequireDefault(_number);
 	
@@ -180,23 +176,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 					case "string":
 	
-						return (0, _lodash10.default)(item);
+						return (0, _lodash8.default)(item);
 	
 					case "number":
 	
-						return (0, _lodash6.default)(item);
+						return (0, _lodash4.default)(item);
 	
 					case "boolean":
 	
-						return (0, _lodash8.default)(item);
+						return (0, _lodash6.default)(item);
 	
 					case "array":
 	
-						return (0, _lodash2.default)(item);
+						return Array.isArray(item);
 	
 					case "object":
 	
-						return (0, _lodash4.default)(item);
+						return (0, _lodash2.default)(item);
 	
 					default:
 						return false;
@@ -1912,47 +1908,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	/**
-	 * lodash 4.0.0 (Custom Build) <https://lodash.com/>
-	 * Build: `lodash modularize exports="npm" -o ./`
-	 * Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2016 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <https://lodash.com/license>
-	 */
-	
-	/**
-	 * Checks if `value` is classified as an `Array` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @type Function
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
-	 * @example
-	 *
-	 * _.isArray([1, 2, 3]);
-	 * // => true
-	 *
-	 * _.isArray(document.body.children);
-	 * // => false
-	 *
-	 * _.isArray('abc');
-	 * // => false
-	 *
-	 * _.isArray(_.noop);
-	 * // => false
-	 */
-	var isArray = Array.isArray;
-	
-	module.exports = isArray;
-
-
-/***/ },
-/* 15 */
-/***/ function(module, exports) {
-
-	/**
 	 * lodash 3.0.2 (Custom Build) <https://lodash.com/>
 	 * Build: `lodash modern modularize exports="npm" -o ./`
 	 * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
@@ -1992,7 +1947,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 15 */
 /***/ function(module, exports) {
 
 	/**
@@ -2077,7 +2032,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 17 */
+/* 16 */
 /***/ function(module, exports) {
 
 	/**
@@ -2153,7 +2108,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 18 */
+/* 17 */
 /***/ function(module, exports) {
 
 	/**
@@ -2254,7 +2209,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 19 */
+/* 18 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -2302,7 +2257,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = string;
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports) {
 
 	"use strict";
