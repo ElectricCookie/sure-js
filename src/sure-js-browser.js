@@ -2,11 +2,10 @@ import chalk from "chalk";
 import { parse } from "./parse";
 import { lex } from "./lexer";
 
-import isArray from "lodash.isArray";
-import isObject from "lodash.isObject";
-import isNumber from "lodash.isNumber";
-import isBoolean from "lodash.isBoolean";
-import isString from "lodash.isString";
+import isObject from "lodash.isobject";
+import isNumber from "lodash.isnumber";
+import isBoolean from "lodash.isboolean";
+import isString from "lodash.isstring";
 
 
 import { mapObject, filterObject, processObject, iterateObject, processArray } from "./utils";
@@ -120,7 +119,7 @@ class SureJsStore{
 
 			case "array":
 
-				return isArray(item);
+				return Array.isArray(item);
 
 			case "object":
 
