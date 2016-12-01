@@ -1,5 +1,4 @@
-import * as _ from "lodash";
-
+	
 const string = {
 	minLength: {
 		parameterType: "number",

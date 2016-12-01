@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 
 const number = {
 	min: {

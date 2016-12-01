@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { parse } from "./parse";
 import { lex } from "./lexer";
-import * as fs from "fs";
+
 import isArray from "lodash.isArray";
 import isObject from "lodash.isObject";
 import isNumber from "lodash.isNumber";
@@ -9,7 +9,6 @@ import isBoolean from "lodash.isBoolean";
 import isString from "lodash.isString";
 
 
-import glob from "glob";
 import { mapObject, filterObject, processObject, iterateObject, processArray } from "./utils";
 
 
@@ -325,31 +324,6 @@ class SureJsStore{
 
 	}
 
-	addSchemas(expr,callback){
-		
-		glob(expr,{},(err,files) => {
-
-			if(err){ throw err; }
-
-
-			for(let i = 0; i < files.length; i++){
-				let file = files[i];
-
-				let data = fs.readFileSync(file);
-
-				data = data.toString();
-
-				this.parseSchema(data,{
-					path: file
-				});
-
-
-			}
-
-			callback();
-
-		});
-	}
 
 	registerValidator(validator){
 		this.validators.push(validator);
