@@ -5,42 +5,8 @@ import chalk from "chalk";
 const defaultIgnores = ["comment","newLine","space","indent"];
 
 
+import { iterateObject , formatList } from "./utils";   
 
-function formatList(list){
-
-    let result = "";
-    if(list.length > 2){
-        result += list.slice(0,list.length-2).join(", ")
-        result += " or "+list[list.length-1];    
-    }
-
-    if(list.length == 2){
-        result = list[0]+" or "+list[1]
-    }
-
-    if(list.length == 1){
-        result = list[0];
-    }
-
-
-    return result;
-
-}
-
-
-
-function iterateObject(object,process){
-
-    let keys = Object.keys(object);
-
-    for(let i = 0; i < keys.length;i++){
-
-        let key = keys[i];
-        let value = object[key];
-        process(key,value);
-    }
-
-}
 
 function getType(type){
 
@@ -156,9 +122,27 @@ export function parse(tokens){
 
         "findArrayStart": {
             expect: {
+                "findItemType": ["bracketClose"],
+                "findArrayParameterName": ["word"]
+            }
+        },
+        "findArrayParameterName": {
+            expect: {
+                "findArrayParameterSeperator": ["equals"]
+            }
+        },
+        "findArrayParameterSeperator": {
+            expect: {
+                "findArrayParameterValue": ["string","number","boolean"],
+            }
+        },
+        "findArrayParameterValue": {
+            expect: {
+                "findArrayStart": ["comma"],
                 "findItemType": ["bracketClose"]
             }
         },
+
         "findParameterOpen": {
             expect: {
                 "findParameterName": ["word"],
@@ -193,6 +177,23 @@ export function parse(tokens){
 
         "findSchemaLinkArrayStart": {
             expect: {
+                "findSchemaOpen": ["bracketClose"],
+                "findItemLinkArrayParameterName ": ["word"],
+            }
+        },
+        "findItemLinkArrayParameterName ": {
+            expect: {
+                "findItemLinkArrayParameterSeperator": ["equals"],
+            }
+        },
+        "findItemLinkArrayParameterSeperator": {
+            expect: {
+                "findItemLinkArrayParameterValue": ["boolean","number","string"]
+            }
+        },
+        "findItemLinkArrayParameterValue": {
+            expect: {
+                "findSchemaLinkArrayStart": ["comma"],
                 "findSchemaOpen": ["bracketClose"]
             }
         }
@@ -207,11 +208,13 @@ export function parse(tokens){
     let currentInclude = [];
     let currentIncludedValues = [];
 
+
     let currentLink = [];
 
     let currentItemLink = [];
 
     let isArray = false;
+    let currentArrayParameter;
 
     const listeners = {
 
@@ -325,7 +328,7 @@ export function parse(tokens){
             word: (token) => {
 
 
-                if(currentLink.length == 3){
+                if(currentItemLink.length == 3){
                     throw new Error(`An item-link has to declare three values at max. Use Syntax: >Schema.item or ...Namespace.Schema.item !`)
                 }
                 currentItemLink.push(token.value);
@@ -340,12 +343,12 @@ export function parse(tokens){
 
                 currentItemName= token.value;
 
-                isArray = false;
 
                 result.namespaces[currentNamespace].schemas[currentSchema].rules[token.value] = {
                     parameters: {},
                     type: null,
-                    array: false
+                    array: false,
+                    arrayParameters: {}
                 }
             }
         },
@@ -359,11 +362,53 @@ export function parse(tokens){
             bracketClose: (token) => {
                 if(isArray){
                     result.namespaces[currentNamespace].schemas[currentSchema].rules[currentItemName].array = true;
-                        
+
+                    isArray = false;  
+                    currentArrayParameter = null;
+
                 }
                 
 
             }
+        },
+
+        findItemLinkArrayParameterName: {
+
+            word: (token) => {
+
+                currentArrayParameter = token.value
+
+            }
+
+        },
+        findItemLinkArrayParameterValue: {
+
+            any: (token) => {
+
+                result.namespaces[currentNamespace].schemas[currentSchema].rules[currentItemName].arrayParameters[currentArrayParameter] = token.value;
+
+            }
+
+        },
+
+
+        findArrayParameterName: {
+
+            word: (token) => {
+
+                currentArrayParameter = token.value
+
+            }
+
+        },
+        findArrayParameterValue: {
+
+            any: (token) => {
+
+                result.namespaces[currentNamespace].schemas[currentSchema].rules[currentItemName].arrayParameters[currentArrayParameter] = token.value;
+
+            }
+
         },
 
         findParameterValue: {
@@ -489,8 +534,6 @@ export function parse(tokens){
             }
 
             
-        }else{
-            throw new Error(chalk.red("Invalid Mode: "+currentMode)+" this is an internal Error!");
         }
 
     }

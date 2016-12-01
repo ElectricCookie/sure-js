@@ -16,7 +16,7 @@ export function filterObject(object,process){
 
 	let result = {};
 
-	iterateObject(object,(key,value) => {
+	processObject(object,(key,value) => {
 		if(process(key,value)){
 			result[key] = value;
 		}
@@ -27,21 +27,26 @@ export function filterObject(object,process){
 }
 
 
-export function mapObject(object,process){
+export function mapObject(object,process,callback){
 	let result = {};
 
-	iterateObject(object,(key,value) => {
-		result[key] = process(key,value);
+	processObject(object,(key,value,done) => {
+		process(key,value,(res) => {
+			result[key] = res;
+			done();
+		});
+	},(err) => {
+		callback(result);
 	});
 
-	return result;
+	
 }
 
 
 export function processObject(object,process,callback){
 
 	if(object == null){
-		callback(null,null);
+		return callback(null,null);
 	}
 
 	let keys = Object.keys(object);
@@ -77,6 +82,30 @@ export function processObject(object,process,callback){
 }
 
 
+export function formatList(list){
+
+    let result = "";
+    if(list.length > 2){
+        let lastItem = list[list.length-1];
+
+        list.pop();
+
+        result = list.join(", ")+" or "+lastItem;
+        
+        return result;
+    }
+
+    if(list.length == 2){
+        result = list[0]+" or "+list[1]
+        return result;
+    }
+
+    if(list.length == 1){
+        result = list[0];
+        return result;
+    }
+
+}
 
 
 export function processArray(array,process,callback){
@@ -94,14 +123,10 @@ export function processArray(array,process,callback){
 		if(done == needed){
 			return callback();
 		}
-		let called = false;
 
 		process(array[done],(err) => {
 			
-			if(called){
-				throw new Error("Calling callback twice. No op!")
-			}
-			called = true;
+
 
 
 			if(err != null){

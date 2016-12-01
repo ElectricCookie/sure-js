@@ -8,13 +8,14 @@ import { mapObject, filterObject, processObject, iterateObject, processArray } f
 
 
 import string from "./validators/string";
+import number from "./validators/number";
 
 
 class SureJsStore{
 
 	constructor(){
 		this.namespaces = {};
-		this.validators = [string];
+		this.validators = [string,number];
 	}
 
 
