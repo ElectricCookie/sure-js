@@ -15,7 +15,7 @@ import string from "./validators/string";
 import number from "./validators/number";
 
 
-class SureJsStore{
+class SureJS{
 
 	constructor(){
 		this.namespaces = {};
@@ -32,7 +32,7 @@ class SureJsStore{
 
 	getNamespaces(){
 		return Object.keys(this.namespaces);
-	}
+	}	
 
 
 	getSchema(namespaceName,schemaName,filter){
@@ -101,8 +101,10 @@ class SureJsStore{
 	}
 
 
-	typesMatch(item,type){
-
+	typesMatch(item,type,allowNull=false){
+		if(item == null && allowNull){
+			return true;
+		}
 		switch(type){
 
 			case "string":
@@ -149,7 +151,7 @@ class SureJsStore{
 
 				if(value.type == "link"){
 
-					if(this.typesMatch(item[key],"object")){
+					if(this.typesMatch(item[key],"object",value.nullable)){
 						this.validate(value.parameters.namespace,value.parameters.schema,item[key],(err,result) => {
 
 							if(err != null){
@@ -160,7 +162,14 @@ class SureJsStore{
 							}
 						});	
 					}else{
-						processedRule({ error: "invalidType", namespace: namespaceName, schema: schemaName, key })
+						processedRule({ 
+							error: "invalidType",
+							namespace: namespaceName,
+							schema: schemaName,
+							key,
+							expected: value.type,
+							got: item[key]
+						})
 					}
 				}else{
 
@@ -168,7 +177,7 @@ class SureJsStore{
 						let resultArray = [];
 						processArray(item[key],(arrayItem,done) => {
 
-							if(this.typesMatch(arrayItem,value.type)){
+							if(this.typesMatch(arrayItem,value.type,value.nullable)){
 
 								this.validateItem(arrayItem,value.parameters,value.type,item,(err,result) => {
 									if(err != null){
@@ -185,7 +194,14 @@ class SureJsStore{
 								})
 
 							}else{
-								done({ error: "invalidType", namespace: namespaceName, schema: schemaName, key })
+								done({
+									error: "invalidType",
+									namespace: namespaceName,
+									schema: schemaName,
+									key: key,
+									expected: value.type,
+									got: arrayItem
+								})
 							}
 
 						},(err) => {
@@ -199,8 +215,7 @@ class SureJsStore{
 						})
 
 					}else{
-
-						if(this.typesMatch(item[key],value.type)){
+						if(this.typesMatch(item[key],value.type,value.nullable)){
 
 
 
@@ -218,7 +233,14 @@ class SureJsStore{
 							})
 
 						}else{
-							processedRule({ error: "invalidType", namespace: namespaceName, schema: schemaName, key })
+							processedRule({ 
+								error: "invalidType",
+								namespace: namespaceName,
+								schema: schemaName,
+								key,
+								expected: value.type,
+								got: item[key]
+							})
 						}
 
 					}
@@ -250,11 +272,13 @@ class SureJsStore{
 
 	validateItem(item,parameters,type,object,callback){
 
+		if(item == null){
+			type = type+"Null";
+		}
 
 
 		processObject(parameters,(parameter,value,processedParameter) => {
 			processArray(this.validators,(validator,processedValidator) => {
-
 
 				if(validator[parameter] != null && validator[parameter].itemTypes.indexOf(type) != -1){
 
@@ -333,4 +357,4 @@ class SureJsStore{
 
 
 
-export default SureJsStore;
+export default SureJS;

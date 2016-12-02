@@ -100,15 +100,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var SureJsStore = function () {
-		function SureJsStore() {
-			_classCallCheck(this, SureJsStore);
+	var SureJS = function () {
+		function SureJS() {
+			_classCallCheck(this, SureJS);
 	
 			this.namespaces = {};
 			this.validators = [_string2.default, _number2.default];
 		}
 	
-		_createClass(SureJsStore, [{
+		_createClass(SureJS, [{
 			key: "registerValidator",
 			value: function registerValidator(validator) {
 				this.validators.push(validator);
@@ -171,7 +171,11 @@ return /******/ (function(modules) { // webpackBootstrap
 		}, {
 			key: "typesMatch",
 			value: function typesMatch(item, type) {
+				var allowNull = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 	
+				if (item == null && allowNull) {
+					return true;
+				}
 				switch (type) {
 	
 					case "string":
@@ -219,7 +223,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							if (value.type == "link") {
 	
-								if (_this2.typesMatch(item[key], "object")) {
+								if (_this2.typesMatch(item[key], "object", value.nullable)) {
 									_this2.validate(value.parameters.namespace, value.parameters.schema, item[key], function (err, result) {
 	
 										if (err != null) {
@@ -230,7 +234,14 @@ return /******/ (function(modules) { // webpackBootstrap
 										}
 									});
 								} else {
-									processedRule({ error: "invalidType", namespace: namespaceName, schema: schemaName, key: key });
+									processedRule({
+										error: "invalidType",
+										namespace: namespaceName,
+										schema: schemaName,
+										key: key,
+										expected: value.type,
+										got: item[key]
+									});
 								}
 							} else {
 	
@@ -239,7 +250,7 @@ return /******/ (function(modules) { // webpackBootstrap
 										var resultArray = [];
 										(0, _utils.processArray)(item[key], function (arrayItem, done) {
 	
-											if (_this2.typesMatch(arrayItem, value.type)) {
+											if (_this2.typesMatch(arrayItem, value.type, value.nullable)) {
 	
 												_this2.validateItem(arrayItem, value.parameters, value.type, item, function (err, result) {
 													if (err != null) {
@@ -255,7 +266,14 @@ return /******/ (function(modules) { // webpackBootstrap
 													}
 												});
 											} else {
-												done({ error: "invalidType", namespace: namespaceName, schema: schemaName, key: key });
+												done({
+													error: "invalidType",
+													namespace: namespaceName,
+													schema: schemaName,
+													key: key,
+													expected: value.type,
+													got: arrayItem
+												});
 											}
 										}, function (err) {
 	
@@ -267,8 +285,7 @@ return /******/ (function(modules) { // webpackBootstrap
 										});
 									})();
 								} else {
-	
-									if (_this2.typesMatch(item[key], value.type)) {
+									if (_this2.typesMatch(item[key], value.type, value.nullable)) {
 	
 										_this2.validateItem(item[key], value.parameters, value.type, item, function (err, result) {
 											if (err != null) {
@@ -283,7 +300,14 @@ return /******/ (function(modules) { // webpackBootstrap
 											}
 										});
 									} else {
-										processedRule({ error: "invalidType", namespace: namespaceName, schema: schemaName, key: key });
+										processedRule({
+											error: "invalidType",
+											namespace: namespaceName,
+											schema: schemaName,
+											key: key,
+											expected: value.type,
+											got: item[key]
+										});
 									}
 								}
 							}
@@ -304,6 +328,10 @@ return /******/ (function(modules) { // webpackBootstrap
 			key: "validateItem",
 			value: function validateItem(item, parameters, type, object, callback) {
 				var _this3 = this;
+	
+				if (item == null) {
+					type = type + "Null";
+				}
 	
 				(0, _utils.processObject)(parameters, function (parameter, value, processedParameter) {
 					(0, _utils.processArray)(_this3.validators, function (validator, processedValidator) {
@@ -367,10 +395,10 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 		}]);
 	
-		return SureJsStore;
+		return SureJS;
 	}();
 	
-	exports.default = SureJsStore;
+	exports.default = SureJS;
 
 /***/ },
 /* 1 */
@@ -959,6 +987,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            expect: {
 	                "findIncludeName": ["include"],
 	                "findItemName": ["word"],
+	                "findItemNullableMarker": ["questionMark"],
 	                "findNamespaceContent": ["curlyClose"]
 	            }
 	        },
@@ -977,6 +1006,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                "findIncludedValues": ["word", "comma"]
 	            }
 	        },
+	
+	        "findItemNullableMarker": {
+	            expect: {
+	                "findItemName": ["word"]
+	            }
+	        },
+	
 	        "findItemName": {
 	            expect: {
 	                "findItemSeperator": ["colon"]
@@ -1106,10 +1142,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var currentItemLink = [];
 	
+	    var isNullable = false;
+	
 	    var isArray = false;
 	    var currentArrayParameter = void 0;
 	
 	    var listeners = {
+	
+	        findItemNullableMarker: {
+	            questionMark: function questionMark(token) {
+	                isNullable = true;
+	            }
+	        },
 	
 	        findSchemaLink: {
 	
@@ -1229,8 +1273,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    parameters: {},
 	                    type: null,
 	                    array: false,
+	                    nullable: isNullable,
 	                    arrayParameters: {}
 	                };
+	
+	                isNullable = false;
 	            }
 	        },
 	
@@ -1550,6 +1597,7 @@ return /******/ (function(modules) { // webpackBootstrap
 									"\n": "newLine",
 									"\r": "newLine",
 									"\t": "indent",
+									"?": "questionMark",
 									"'": "singleQuote",
 									"\"": "doubleQuote",
 									"{": "curlyOpen",

@@ -46,6 +46,39 @@ describe('sureJs', () => {
             
 
         });
+
+
+        describe("Nullable values", () => {
+            let store = new SureJS();
+
+            store.parseSchema(`
+                Test{
+                    #MayBeNull{
+                        ?test: str()    
+                    }
+                    #MayNotBeNull{
+                        test: str()
+                    }
+                }
+            `);
+            it("should validate schemas containing nulls that allow it",() => {
+
+                store.validate("Test","MayBeNull",{ test: null },(err,res) => {
+                    expect(err).to.be.null;
+                    expect(res.test).to.be.null;
+                });
+
+
+            });
+
+            it("should validate disallow nulls by default",() => {
+                store.validate("Test","MayNotBeNull",{ test: null },(err,res) => {
+                    expect(err).to.not.be.null;
+                });
+            });
+        })
+
+    
         
 
         it("should validate a nested Schema",() => {

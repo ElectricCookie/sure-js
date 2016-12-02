@@ -9,6 +9,7 @@ export function lex(source){
 		"\n": "newLine",
 		"\r": "newLine",
 		"\t": "indent",
+		"?": "questionMark",
 		"'": "singleQuote",
 		"\"": "doubleQuote",
 		"{": "curlyOpen",

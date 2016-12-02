@@ -79,6 +79,7 @@ describe("Parse", () => {
 					example: "string"
 				},
 				array: true,
+				nullable: false,
 				arrayParameters: {
 					maxLength: 10
 				},

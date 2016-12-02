@@ -64,6 +64,7 @@ export function parse(tokens){
             expect: {
                 "findIncludeName": ["include"],
                 "findItemName": ["word"],
+                "findItemNullableMarker": ["questionMark"],
                 "findNamespaceContent": ["curlyClose"]
             }
         },
@@ -82,6 +83,13 @@ export function parse(tokens){
                 "findIncludedValues": ["word","comma"]
             }
         },
+
+        "findItemNullableMarker": {
+            expect: {
+                "findItemName": ["word"]
+            }
+        },
+
         "findItemName": {
             expect: {
                 "findItemSeperator": ["colon"],
@@ -213,11 +221,19 @@ export function parse(tokens){
 
     let currentItemLink = [];
 
+    let isNullable = false;
+
     let isArray = false;
     let currentArrayParameter;
 
     const listeners = {
 
+
+        findItemNullableMarker: {
+            questionMark: (token) => {
+                isNullable = true;
+            }
+        },
 
         findSchemaLink: {
 
@@ -348,8 +364,11 @@ export function parse(tokens){
                     parameters: {},
                     type: null,
                     array: false,
+                    nullable: isNullable,
                     arrayParameters: {}
                 }
+
+                isNullable = false;
             }
         },
 
