@@ -91,7 +91,7 @@ SureJS is a way to declartively express the shape of your data and all the const
 Contributions are very welcome. You can run `gulp test/watch/coverage/build` to make your development easier. Please make sure that all tests are passing before making a PR.
 
 ## Roadmap
-
+* Syntax Highlighting
 * TypeScript Transpiler
 * Java Transpiler
 * SureJS Form generator (generate React-Forms based on a schema)
