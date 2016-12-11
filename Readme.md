@@ -17,8 +17,12 @@ Sure-JS is a Schema language that allows you to create Schemas which you can use
 	npm i --save sure-js
 ```
 
+SureJS also offers a bundled version in the `dist` directory. Current minified file-size is `~20KB`
+
+
 ## Example
 ```
+// User is the namespace
 User{
 	
 	#Account{
@@ -26,7 +30,6 @@ User{
 		username: str(minLength=3,maxLength=16,trim=true)
 
 		email: str(minLength=4,maxLength=64,trim=true)
-
 
 		// Will be hashed
 		password: str(length=64) 
@@ -41,21 +44,20 @@ User{
 	}
 
 	#Login{
+	        // We can include the rule from the Account Schema
 		username: >Account.username
 		password: str(minLength=3,maxLength=1024)
 	}
 
 	#Register{
-		// Include rules from schema by using @ Syntax
 		username: >Account.username
 		password: >Login.password
 		passwordConfirm: >Login.password
 	}
-
 	#PublicProfile{
 		// Partial schema
 		...User.User{
-			// Only the rules listed here are part of the schema. If there are no {}-braces all rules are included
+			// Only the rules listed here are part of the schema. If there are no {}-braces, or if they're empty all rules are included
 			username,
 			bio,
 			lastSeen,
@@ -69,6 +71,11 @@ User{
 
 ```	
 
+## Why SureJS
+SureJS is a way to declartively express the shape of your data and all the constraints you're giving it. The main difference to technologies like Google's Protobufs is the Syntax of SureJS which makes it really easy to grasp the language and it also speeds up development with features like composition and references. The ability to be ported to other languages makes it a great tool for modern APIs since they often interact with multiple clients all written in their own language.
+
+
+
 
 ## Further reading
 
@@ -79,6 +86,14 @@ User{
 [Custom Validators](https://github.com/ElectricCookie/sure-js/wiki/Custom-validators)
 
 
+## Contributing
 
+Contributions are very welcome. You can run `gulp test/watch/coverage/build` to make your development easier. Please make sure that all tests are passing before making a PR.
+
+## Roadmap
+* Syntax Highlighting
+* TypeScript Transpiler
+* Java Transpiler
+* SureJS Form generator (generate React-Forms based on a schema)
 
 
