@@ -134,8 +134,6 @@ return /******/ (function(modules) { // webpackBootstrap
 				var finalRules = {};
 				var schema = this.namespaces[namespaceName][schemaName];
 	
-				// add rules of current schema
-	
 				for (var i = 0; i < schema.includes.length; i++) {
 					var include = schema.includes[i];
 	
@@ -145,9 +143,6 @@ return /******/ (function(modules) { // webpackBootstrap
 						finalRules[property] = rule;
 					});
 				}
-	
-				// Add rules of current schema
-	
 	
 				(0, _utils.iterateObject)(schema.rules, function (key, value) {
 	
@@ -223,25 +218,50 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							if (value.type == "link") {
 	
-								if (_this2.typesMatch(item[key], "object", value.nullable)) {
-									_this2.validate(value.parameters.namespace, value.parameters.schema, item[key], function (err, result) {
+								if (value.array) {
+									(function () {
+										var resultArray = [];
+										(0, _utils.processArray)(item[key], function (arrayItem, done) {
 	
-										if (err != null) {
-											processedRule(err);
-										} else {
-											finalResult[key] = result;
-											processedRule();
-										}
-									});
+											_this2.validate(value.parameters.namespace, value.parameters.schema, arrayItem, function (err, result) {
+												if (err != null) {
+													done(err);
+												} else {
+													resultArray.push(result);
+													done();
+												}
+											});
+										}, function (err) {
+	
+											if (err != null) {
+												processedRule(err);
+											} else {
+												finalResult[key] = resultArray;
+											}
+										});
+									})();
 								} else {
-									processedRule({
-										error: "invalidType",
-										namespace: namespaceName,
-										schema: schemaName,
-										key: key,
-										expected: value.type,
-										got: item[key]
-									});
+	
+									if (_this2.typesMatch(item[key], "object", value.nullable)) {
+										_this2.validate(value.parameters.namespace, value.parameters.schema, item[key], function (err, result) {
+	
+											if (err != null) {
+												processedRule(err);
+											} else {
+												finalResult[key] = result;
+												processedRule();
+											}
+										});
+									} else {
+										processedRule({
+											error: "invalidType",
+											namespace: namespaceName,
+											schema: schemaName,
+											key: key,
+											expected: value.type,
+											got: item[key]
+										});
+									}
 								}
 							} else {
 	
@@ -1605,7 +1625,7 @@ return /******/ (function(modules) { // webpackBootstrap
 									"(": "braceOpen",
 									"=": "equals",
 									")": "braceClose",
-									";": "semiColon",
+									";": "newLine",
 									":": "colon",
 									".": "dot",
 									"\\": "backwardSlash",
