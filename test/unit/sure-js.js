@@ -158,6 +158,52 @@ describe('sureJs', () => {
 
         });
 
+        it("should validate an array-link Schema",() => {
+
+            let store = new SureJS();
+
+            store.parseSchema(`
+
+
+                Test{
+
+                    #Schema1{
+                        foo: boolean()
+                    }
+
+                    #Schema2{
+                        bar: @Schema1[]
+                    }
+
+                }
+
+            `)
+
+
+            let test = {
+                bar: [{ foo: true },{ foo: false }]
+            }
+
+            store.validate("Test","Schema2",test,(err,res) => {
+
+                expect(err).to.be.null;
+                expect(res).to.deep.equal(test);
+
+            })
+
+            test = {
+                bar: []
+            }
+            store.validate("Test","Schema2",test,(err,res) => {
+
+
+                expect(err).to.be.null;
+                expect(res).to.deep.equal(test);
+
+            })
+
+        });
+
     });
 
 

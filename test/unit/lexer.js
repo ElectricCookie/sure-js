@@ -19,7 +19,7 @@ describe("lexer", () => {
 			"(": "braceOpen",
 			"=": "equals",
 			")": "braceClose",
-			";": "semiColon",
+			";": "newLine",
 			":": "colon",
 			".": "dot",
 			"\\": "backwardSlash",

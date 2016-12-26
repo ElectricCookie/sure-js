@@ -17,7 +17,7 @@ export function lex(source){
 		"(": "braceOpen",
 		"=": "equals",
 		")": "braceClose",
-		";": "semiColon",
+		";": "newLine",
 		":": "colon",
 		".": "dot",
 		"\\": "backwardSlash",

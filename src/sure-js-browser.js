@@ -22,9 +22,6 @@ class SureJS{
 		this.validators = [string,number];
 	}
 
-
-
-
 	registerValidator(validator){
 		this.validators.push(validator);
 	}
@@ -51,11 +48,6 @@ class SureJS{
 		let finalRules = {};
 		let schema = this.namespaces[namespaceName][schemaName];
 
-
-		
-
-		
-		// add rules of current schema
 			
 		for(let i = 0; i < schema.includes.length; i++){
 			let include = schema.includes[i];
@@ -70,7 +62,6 @@ class SureJS{
 		}
 
 		
-		// Add rules of current schema
 
 		
 		iterateObject(schema.rules,(key,value) => {
@@ -151,25 +142,51 @@ class SureJS{
 
 				if(value.type == "link"){
 
-					if(this.typesMatch(item[key],"object",value.nullable)){
-						this.validate(value.parameters.namespace,value.parameters.schema,item[key],(err,result) => {
+					if(value.array){
+						let resultArray = [];
+						processArray(item[key],(arrayItem,done) => {
+
+							this.validate(value.parameters.namespace,value.parameters.schema,arrayItem,(err,result) => {
+								if(err != null){
+									done(err)
+								}else{
+									resultArray.push(result);
+									done();
+								}
+							});
+						},(err) => {
 
 							if(err != null){
-								processedRule(err)
+								processedRule(err)							
 							}else{
-								finalResult[key] = result;
-								processedRule();
+								finalResult[key] = resultArray;
 							}
-						});	
+
+						});
+
+
 					}else{
-						processedRule({ 
-							error: "invalidType",
-							namespace: namespaceName,
-							schema: schemaName,
-							key,
-							expected: value.type,
-							got: item[key]
-						})
+
+						if(this.typesMatch(item[key],"object",value.nullable)){
+							this.validate(value.parameters.namespace,value.parameters.schema,item[key],(err,result) => {
+
+								if(err != null){
+									processedRule(err)
+								}else{
+									finalResult[key] = result;
+									processedRule();
+								}
+							});	
+						}else{
+							processedRule({ 
+								error: "invalidType",
+								namespace: namespaceName,
+								schema: schemaName,
+								key,
+								expected: value.type,
+								got: item[key]
+							})
+						}
 					}
 				}else{
 
