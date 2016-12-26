@@ -1,6 +1,6 @@
 {
   "name": "sure-js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A Schema Language for JavaScript, TypeScript and Java",
   "main": "dist/sure-js.js",
   "scripts": {
