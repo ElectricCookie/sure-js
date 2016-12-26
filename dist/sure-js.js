@@ -237,6 +237,7 @@ return /******/ (function(modules) { // webpackBootstrap
 												processedRule(err);
 											} else {
 												finalResult[key] = resultArray;
+												processedRule();
 											}
 										});
 									})();
@@ -1572,7 +1573,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function processArray(array, process, callback) {
 	
 		if (array.length == 0) {
-			callback();
+			return callback();
 		}
 	
 		var needed = array.length;

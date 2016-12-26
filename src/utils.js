@@ -112,7 +112,7 @@ export function processArray(array,process,callback){
 
 
 	if(array.length == 0){
-		callback()
+		return callback();
 	}
 
 	let needed = array.length;

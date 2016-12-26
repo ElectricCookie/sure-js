@@ -160,6 +160,7 @@ class SureJS{
 								processedRule(err)							
 							}else{
 								finalResult[key] = resultArray;
+								processedRule();
 							}
 
 						});
