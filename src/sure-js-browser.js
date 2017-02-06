@@ -126,7 +126,7 @@ class SureJS{
 	}
 
 
-	validate(namespaceName,schemaName,item,callback){
+	validate(namespaceName,schemaName,item,callback,allowNull = false){
 		try{
 
 			let rules = this.getSchema(namespaceName,schemaName);
@@ -139,13 +139,13 @@ class SureJS{
 			let finalResult = {};
 
 			processObject(rules,(key,value,processedRule) => {
-
+				
 				if(value.type == "link"){
 
 					if(value.array){
 						let resultArray = [];
 						processArray(item[key],(arrayItem,done) => {
-
+							
 							this.validate(value.parameters.namespace,value.parameters.schema,arrayItem,(err,result) => {
 								if(err != null){
 									done(err)
@@ -168,7 +168,7 @@ class SureJS{
 
 					}else{
 
-						if(this.typesMatch(item[key],"object",value.nullable)){
+						if(this.typesMatch(item[key],"object",value.nullable || allowNull)){
 							this.validate(value.parameters.namespace,value.parameters.schema,item[key],(err,result) => {
 
 								if(err != null){
@@ -195,7 +195,7 @@ class SureJS{
 						let resultArray = [];
 						processArray(item[key],(arrayItem,done) => {
 
-							if(this.typesMatch(arrayItem,value.type,value.nullable)){
+							if(this.typesMatch(arrayItem,value.type,value.nullable || allowNull)){
 
 								this.validateItem(arrayItem,value.parameters,value.type,item,(err,result) => {
 									if(err != null){
@@ -206,7 +206,7 @@ class SureJS{
 											item: arrayItem
 										})
 									}else{
-										resultArray[key] = result;
+										resultArray.push(result);
 										done();
 									}
 								})
@@ -228,12 +228,13 @@ class SureJS{
 								processedRule(err)							
 							}else{
 								finalResult[key] = resultArray;
+								processedRule()
 							}
 
 						})
 
 					}else{
-						if(this.typesMatch(item[key],value.type,value.nullable)){
+						if(this.typesMatch(item[key],value.type,value.nullable || allowNull)){
 
 
 
