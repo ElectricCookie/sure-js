@@ -130,7 +130,8 @@ describe('sureJs', () => {
                 Test{
 
                     #Schema1{
-                        foo: boolean[]()
+                        test: str()
+                        foo: str[]()
                     }
 
                     #Schema2{
@@ -144,7 +145,9 @@ describe('sureJs', () => {
 
             let test = {
                 bar: {
-                    foo: [true,false]
+
+                    foo: ["foo","bar"],
+                    test: "foo"
                 }
             }
 

@@ -203,6 +203,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			value: function validate(namespaceName, schemaName, item, callback) {
 				var _this2 = this;
 	
+				var allowNull = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
+	
 				try {
 					(function () {
 	
@@ -243,7 +245,7 @@ return /******/ (function(modules) { // webpackBootstrap
 									})();
 								} else {
 	
-									if (_this2.typesMatch(item[key], "object", value.nullable)) {
+									if (_this2.typesMatch(item[key], "object", value.nullable || allowNull)) {
 										_this2.validate(value.parameters.namespace, value.parameters.schema, item[key], function (err, result) {
 	
 											if (err != null) {
@@ -271,7 +273,7 @@ return /******/ (function(modules) { // webpackBootstrap
 										var resultArray = [];
 										(0, _utils.processArray)(item[key], function (arrayItem, done) {
 	
-											if (_this2.typesMatch(arrayItem, value.type, value.nullable)) {
+											if (_this2.typesMatch(arrayItem, value.type, value.nullable || allowNull)) {
 	
 												_this2.validateItem(arrayItem, value.parameters, value.type, item, function (err, result) {
 													if (err != null) {
@@ -282,7 +284,7 @@ return /******/ (function(modules) { // webpackBootstrap
 															item: arrayItem
 														});
 													} else {
-														resultArray[key] = result;
+														resultArray.push(result);
 														done();
 													}
 												});
@@ -302,11 +304,12 @@ return /******/ (function(modules) { // webpackBootstrap
 												processedRule(err);
 											} else {
 												finalResult[key] = resultArray;
+												processedRule();
 											}
 										});
 									})();
 								} else {
-									if (_this2.typesMatch(item[key], value.type, value.nullable)) {
+									if (_this2.typesMatch(item[key], value.type, value.nullable || allowNull)) {
 	
 										_this2.validateItem(item[key], value.parameters, value.type, item, function (err, result) {
 											if (err != null) {
