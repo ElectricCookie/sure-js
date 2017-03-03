@@ -120,48 +120,65 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 		}, {
 			key: "getSchema",
-			value: function getSchema(namespaceName, schemaName, filter) {
+			value: function getSchema(namespaceName, schemaName, filter, callback) {
 				var _this = this;
 	
 				if (this.namespaces[namespaceName] == null) {
-					throw new Error("Can not find namespace " + namespaceName);
+					return callback("unknownNamespace");
 				}
 	
 				if (this.namespaces[namespaceName][schemaName] == null) {
-					throw new Error("Can not find schema " + schemaName + " in  " + namespaceName);
+					return callback("unknownSchema");
 				}
 	
 				var finalRules = {};
 				var schema = this.namespaces[namespaceName][schemaName];
 	
-				for (var i = 0; i < schema.includes.length; i++) {
-					var include = schema.includes[i];
-	
-					var rules = this.getSchema(include.namespace, include.schema, include.include);
-	
-					(0, _utils.iterateObject)(rules, function (property, rule) {
-						finalRules[property] = rule;
+				(0, _utils.processArray)(schema.includes, function (include, done) {
+					_this.getSchema(include.namespace, include.schema, include.include, function (err, rules) {
+						(0, _utils.iterateObject)(rules, function (property, rule) {
+							finalRules[property] = rule;
+						});
+						done(err);
 					});
-				}
-	
-				(0, _utils.iterateObject)(schema.rules, function (key, value) {
-	
-					if (value.type == "itemLink") {
-						value = _this.getSchema(value.parameters.namespace, value.parameters.schema)[value.parameters.item];
+				}, function (err) {
+					if (err != null) {
+						return callback(err);
 					}
 	
-					finalRules[key] = value;
-				});
+					(0, _utils.processObject)(schema.rules, function (key, value, done) {
+						if (value.type == "itemLink") {
 	
-				if (filter != null && filter.length != 0) {
+							_this.getSchema(value.parameters.namespace, value.parameters.schema, null, function (err, schema) {
 	
-					// Only include values that are present in the filter array.
-					return (0, _utils.filterObject)(finalRules, function (key, value) {
-						return filter.indexOf(key) != -1;
+								if (schema[value.parameters.item] != null) {
+	
+									finalRules[key] = schema[value.parameters.item];
+									done(null);
+								} else {
+	
+									done("itemLinkIsNull");
+								}
+							});
+						} else {
+	
+							finalRules[key] = value;
+	
+							done();
+						}
+					}, function (err) {
+	
+						if (filter != null && filter.length != 0) {
+	
+							// Only include values that are present in the filter array.
+							finalRules = (0, _utils.filterObject)(finalRules, function (key, value) {
+								return filter.indexOf(key) != -1;
+							});
+						}
+	
+						callback(null, finalRules);
 					});
-				}
-	
-				return finalRules;
+				});
 			}
 		}, {
 			key: "typesMatch",
@@ -174,29 +191,17 @@ return /******/ (function(modules) { // webpackBootstrap
 				switch (type) {
 	
 					case "string":
-	
 						return (0, _lodash8.default)(item);
-	
 					case "number":
-	
 						return (0, _lodash4.default)(item);
-	
 					case "boolean":
-	
 						return (0, _lodash6.default)(item);
-	
 					case "array":
-	
 						return Array.isArray(item);
-	
 					case "object":
-	
 						return (0, _lodash2.default)(item);
-	
-					default:
-						return false;
-	
 				}
+				return false;
 			}
 		}, {
 			key: "validate",
@@ -205,148 +210,142 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				var allowNull = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
 	
-				try {
-					(function () {
 	
-						var rules = _this2.getSchema(namespaceName, schemaName);
+				this.getSchema(namespaceName, schemaName, null, function (err, rules) {
+					if (err != null) {
+						return callback(err);
+					}
 	
-						// Start iterating the rules
+					var finalResult = {};
 	
-						// Check links
+					(0, _utils.processObject)(rules, function (key, value, processedRule) {
 	
-						var finalResult = {};
+						if (value.type == "link") {
 	
-						(0, _utils.processObject)(rules, function (key, value, processedRule) {
+							if (value.array) {
+								(function () {
 	
-							if (value.type == "link") {
+									var resultArray = [];
+									(0, _utils.processArray)(item[key], function (arrayItem, done) {
 	
-								if (value.array) {
-									(function () {
-										var resultArray = [];
-										(0, _utils.processArray)(item[key], function (arrayItem, done) {
+										_this2.validate(value.parameters.namespace, value.parameters.schema, arrayItem, function (err, result) {
+											if (err != null) {
+												done(err);
+											} else {
+												resultArray.push(result);
+												done();
+											}
+										});
+									}, function (err) {
 	
-											_this2.validate(value.parameters.namespace, value.parameters.schema, arrayItem, function (err, result) {
+										if (err != null) {
+											processedRule(err);
+										} else {
+											finalResult[key] = resultArray;
+											processedRule();
+										}
+									});
+								})();
+							} else {
+	
+								if (_this2.typesMatch(item[key], "object", value.nullable || allowNull)) {
+									_this2.validate(value.parameters.namespace, value.parameters.schema, item[key], function (err, result) {
+	
+										if (err != null) {
+											processedRule(err);
+										} else {
+											finalResult[key] = result;
+											processedRule();
+										}
+									});
+								} else {
+									processedRule({
+										error: "invalidType",
+										namespace: namespaceName,
+										schema: schemaName,
+										key: key,
+										expected: value.type,
+										got: item[key]
+									});
+								}
+							}
+						} else {
+	
+							if (value.array) {
+								(function () {
+									var resultArray = [];
+									(0, _utils.processArray)(item[key], function (arrayItem, done) {
+	
+										if (_this2.typesMatch(arrayItem, value.type, value.nullable || allowNull)) {
+	
+											_this2.validateItem(arrayItem, value.parameters, value.type, item, function (err, result) {
 												if (err != null) {
-													done(err);
+													done({
+														err: err,
+														namespace: namespaceName,
+														schema: schemaName, key: key,
+														item: arrayItem
+													});
 												} else {
 													resultArray.push(result);
 													done();
 												}
 											});
-										}, function (err) {
+										} else {
+											done({
+												error: "invalidType",
+												namespace: namespaceName,
+												schema: schemaName,
+												key: key,
+												expected: value.type,
+												got: arrayItem
+											});
+										}
+									}, function (err) {
 	
-											if (err != null) {
-												processedRule(err);
-											} else {
-												finalResult[key] = resultArray;
-												processedRule();
-											}
-										});
-									})();
-								} else {
-	
-									if (_this2.typesMatch(item[key], "object", value.nullable || allowNull)) {
-										_this2.validate(value.parameters.namespace, value.parameters.schema, item[key], function (err, result) {
-	
-											if (err != null) {
-												processedRule(err);
-											} else {
-												finalResult[key] = result;
-												processedRule();
-											}
-										});
-									} else {
-										processedRule({
-											error: "invalidType",
-											namespace: namespaceName,
-											schema: schemaName,
-											key: key,
-											expected: value.type,
-											got: item[key]
-										});
-									}
-								}
+										if (err != null) {
+											processedRule(err);
+										} else {
+											finalResult[key] = resultArray;
+											processedRule();
+										}
+									});
+								})();
 							} else {
+								if (_this2.typesMatch(item[key], value.type, value.nullable || allowNull)) {
 	
-								if (value.array) {
-									(function () {
-										var resultArray = [];
-										(0, _utils.processArray)(item[key], function (arrayItem, done) {
-	
-											if (_this2.typesMatch(arrayItem, value.type, value.nullable || allowNull)) {
-	
-												_this2.validateItem(arrayItem, value.parameters, value.type, item, function (err, result) {
-													if (err != null) {
-														done({
-															err: err,
-															namespace: namespaceName,
-															schema: schemaName, key: key,
-															item: arrayItem
-														});
-													} else {
-														resultArray.push(result);
-														done();
-													}
-												});
-											} else {
-												done({
-													error: "invalidType",
-													namespace: namespaceName,
-													schema: schemaName,
-													key: key,
-													expected: value.type,
-													got: arrayItem
-												});
-											}
-										}, function (err) {
-	
-											if (err != null) {
-												processedRule(err);
-											} else {
-												finalResult[key] = resultArray;
-												processedRule();
-											}
-										});
-									})();
+									_this2.validateItem(item[key], value.parameters, value.type, item, function (err, result) {
+										if (err != null) {
+											processedRule({
+												err: err,
+												namespace: namespaceName,
+												schema: schemaName, key: key
+											});
+										} else {
+											finalResult[key] = result;
+											processedRule();
+										}
+									});
 								} else {
-									if (_this2.typesMatch(item[key], value.type, value.nullable || allowNull)) {
-	
-										_this2.validateItem(item[key], value.parameters, value.type, item, function (err, result) {
-											if (err != null) {
-												processedRule({
-													err: err,
-													namespace: namespaceName,
-													schema: schemaName, key: key
-												});
-											} else {
-												finalResult[key] = result;
-												processedRule();
-											}
-										});
-									} else {
-										processedRule({
-											error: "invalidType",
-											namespace: namespaceName,
-											schema: schemaName,
-											key: key,
-											expected: value.type,
-											got: item[key]
-										});
-									}
+									processedRule({
+										error: "invalidType",
+										namespace: namespaceName,
+										schema: schemaName,
+										key: key,
+										expected: value.type,
+										got: item[key]
+									});
 								}
 							}
-						}, function (err) {
-							if (err != null) {
-								callback(err, null);
-							} else {
-								callback(null, finalResult);
-							}
-						});
-					})();
-				} catch (e) {
-					throw e;
-					callback(e, null);
-				}
+						}
+					}, function (err) {
+						if (err != null) {
+							callback(err, null);
+						} else {
+							callback(null, finalResult);
+						}
+					});
+				});
 			}
 		}, {
 			key: "validateItem",
@@ -1530,16 +1529,20 @@ return /******/ (function(modules) { // webpackBootstrap
 			return callback(null, {});
 		}
 	
+		var finalObject = {};
+	
 		var next = function next() {
 	
-			process(keys[done], object[keys[done]], function (err) {
+			process(keys[done], object[keys[done]], function (err, newValue) {
 				if (err != null) {
 					return callback(err);
 				}
 	
+				finalObject[keys[done]] = newValue;
+	
 				done++;
 				if (done == needed) {
-					callback();
+					callback(null, newValue);
 				} else {
 					next();
 				}
@@ -1582,18 +1585,20 @@ return /******/ (function(modules) { // webpackBootstrap
 		var needed = array.length;
 		var done = 0;
 	
+		var finalArray = [];
+	
 		var next = function next() {
 	
 			if (done == needed) {
-				return callback();
+				return callback(null, finalArray);
 			}
 	
-			process(array[done], function (err) {
+			process(array[done], function (err, resultItem) {
 	
 				if (err != null) {
 					callback(err);
 				} else {
-	
+					finalArray.push(resultItem);
 					done++;
 					next();
 				}

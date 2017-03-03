@@ -60,16 +60,20 @@ export function processObject(object,process,callback){
 		return callback(null,{});
 	}
 
+	let finalObject = {};
+
 	let next = () => {
 
-		process(keys[done],object[keys[done]],(err) => {
+		process(keys[done],object[keys[done]],(err,newValue) => {
 			if(err != null){
 				return callback(err);
 			} 
 
+			finalObject[keys[done]] = newValue;
+
 			done++;
 			if(done == needed){
-				callback();
+				callback(null,newValue);
 			}else{
 				next();
 			}
@@ -118,21 +122,21 @@ export function processArray(array,process,callback){
 	let needed = array.length;
 	let done = 0;
 
+	let finalArray = [];
+
 	let next = () => {
 
 		if(done == needed){
-			return callback();
+			return callback(null,finalArray);
 		}
 
-		process(array[done],(err) => {
-			
-
-
+		process(array[done],(err,resultItem) => {
+		
 
 			if(err != null){
 				callback(err);
 			}else{
-				
+				finalArray.push(resultItem);		
 				done++;
 				next();
 				

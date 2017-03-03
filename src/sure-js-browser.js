@@ -32,62 +32,76 @@ class SureJS{
 	}	
 
 
-	getSchema(namespaceName,schemaName,filter){
+	getSchema(namespaceName,schemaName,filter,callback){
 
 
 		if(this.namespaces[namespaceName] == null){
-			throw new Error(`Can not find namespace ${ namespaceName }`)
+			return callback("unknownNamespace");
 		}
 
-
-
 		if(this.namespaces[namespaceName][schemaName] == null){
-			throw new Error(`Can not find schema ${ schemaName } in  ${ namespaceName }`)	
+			return callback("unknownSchema");
 		}
 
 		let finalRules = {};
 		let schema = this.namespaces[namespaceName][schemaName];
 
-			
-		for(let i = 0; i < schema.includes.length; i++){
-			let include = schema.includes[i];
-
-			let rules = this.getSchema(include.namespace,include.schema,include.include);
-
-
-			iterateObject(rules,(property,rule) => {
-				finalRules[property] = rule;
+		processArray(schema.includes,(include,done) => {
+			this.getSchema(include.namespace,include.schema,include.include,(err,rules) => {
+				iterateObject(rules,(property,rule) => {
+					finalRules[property] = rule;
+				});
+				done(err);
 			});
-			
-		}
 
-		
-
-		
-		iterateObject(schema.rules,(key,value) => {
-
-
-			if(value.type == "itemLink"){
-				value = this.getSchema(value.parameters.namespace,value.parameters.schema)[value.parameters.item];
+		},(err) => {
+			if(err != null){
+				return callback(err);
 			}
 
-			finalRules[key] = value;
-		})	
+			processObject(schema.rules,(key,value,done) => {
+				if(value.type == "itemLink"){
+
+					this.getSchema(value.parameters.namespace,value.parameters.schema,null,(err,schema) => {
+
+						if(schema[value.parameters.item] != null){
+						
+							finalRules[key] = schema[value.parameters.item];
+							done(null);	
+						
+						}else{
+						
+							done("itemLinkIsNull");
+						
+						}
+
+					});
+
+				}else{
+
+					finalRules[key] = value;
+
+					done();	
+				}
+
+				
+
+			},(err) => {
+
+
+				if(filter != null && filter.length != 0){
 			
+					// Only include values that are present in the filter array.
+					finalRules =  filterObject(finalRules,(key,value) => {
+						return filter.indexOf(key) != -1
+					});
+				}
 
+				callback(null,finalRules);
 
-
-		if(filter != null && filter.length != 0){
-			
-			// Only include values that are present in the filter array.
-			return filterObject(finalRules,(key,value) => {
-				return filter.indexOf(key) != -1
 			});
-		}
+		})
 
-		
-
-		return finalRules
 
 	}
 
@@ -99,53 +113,39 @@ class SureJS{
 		switch(type){
 
 			case "string":
-
 				return isString(item);
-
 			case "number":
-
 				return isNumber(item);
-
 			case "boolean":
-
 				return isBoolean(item);
-
 			case "array":
-
 				return Array.isArray(item);
-
 			case "object":
-
 				return isObject(item);
-
-			default: 
-				return false;
-
 		}
-
+		return false;
 	}
 
 
 	validate(namespaceName,schemaName,item,callback,allowNull = false){
-		try{
-
-			let rules = this.getSchema(namespaceName,schemaName);
-
-			
-			// Start iterating the rules
-
-			// Check links
+		
+		
+		this.getSchema(namespaceName,schemaName,null,(err,rules) => {
+			if(err != null){
+				return callback(err);
+			}
 
 			let finalResult = {};
-
+			
 			processObject(rules,(key,value,processedRule) => {
-				
+			
 				if(value.type == "link"){
 
 					if(value.array){
+
 						let resultArray = [];
 						processArray(item[key],(arrayItem,done) => {
-							
+
 							this.validate(value.parameters.namespace,value.parameters.schema,arrayItem,(err,result) => {
 								if(err != null){
 									done(err)
@@ -236,8 +236,6 @@ class SureJS{
 					}else{
 						if(this.typesMatch(item[key],value.type,value.nullable || allowNull)){
 
-
-
 							this.validateItem(item[key],value.parameters,value.type,item,(err,result) => {
 								if(err != null){
 									processedRule({
@@ -276,17 +274,12 @@ class SureJS{
 				}
 				
 
-			})
+			});
 
 
+		});
 
-		}catch(e){
-			throw e
-			callback(e,null);
-		}
-
-
-
+		
 	}
 
 	validateItem(item,parameters,type,object,callback){
